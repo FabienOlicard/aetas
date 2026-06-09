@@ -754,7 +754,9 @@ const AlbertAgeApp = () => {
       position:fixed; inset:0; z-index:1; pointer-events:none;
       background:radial-gradient(120% 100% at 50% 40%, transparent 55%, rgba(7,4,11,.7) 100%);
     }
-    .albert-wrap{ position:relative; z-index:2; max-width:760px; margin:0 auto; padding:clamp(28px,6vw,64px) 20px 72px; }
+    .albert-wrap{ position:relative; z-index:2; max-width:760px; margin:0 auto; box-sizing:border-box;
+      min-height:100vh; min-height:100dvh; display:flex; flex-direction:column; justify-content:center;
+      padding:calc(env(safe-area-inset-top, 0px) + clamp(40px,9vw,76px)) 20px calc(env(safe-area-inset-bottom, 0px) + 64px); }
 
     .a-present{ text-align:center; font-size:11px; letter-spacing:.42em; text-transform:uppercase;
       color:var(--muted); margin-bottom:14px; font-weight:400; }
@@ -865,7 +867,7 @@ const AlbertAgeApp = () => {
       margin-bottom:10px; background:rgba(143,230,245,.07); }
 
     /* Bouton son */
-    .a-sound{ position:fixed; top:14px; right:14px; z-index:40; width:42px; height:42px; border-radius:50%;
+    .a-sound{ position:fixed; top:calc(env(safe-area-inset-top, 0px) + 14px); right:calc(env(safe-area-inset-right, 0px) + 14px); z-index:40; width:42px; height:42px; border-radius:50%;
       display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--cyan-2);
       border:1px solid rgba(143,230,245,.28); background:rgba(12,7,18,.5); backdrop-filter:blur(6px);
       transition:border-color .2s, box-shadow .2s; }
