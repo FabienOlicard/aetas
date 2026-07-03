@@ -1,6 +1,6 @@
 import React from 'react';
-import { createRoot } from 'react-dom/client';
+import ReactDOM from 'react-dom/client';
 import AlbertAgeApp from './AlbertAgeApp.jsx';
 import './index.css';
 
-createRoot(document.getElementById('root')).render(<AlbertAgeApp />);
+ReactDOM.createRoot(document.getElementById('root')).render(<AlbertAgeApp />);
