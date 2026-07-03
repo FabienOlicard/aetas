@@ -42,6 +42,41 @@ const AlbertAgeApp = () => {
   const synthRef = useRef(null);
 
   // ─────────────────────────────────────────────────────────────
+  // BACK-OFFICE PRIVÉ — route /admin-fabien
+  // ⚠️ Garde-fou léger : empêche un curieux d'entrer, mais le mot de
+  // passe est lisible dans le code côté navigateur. Vraie sécurité = Supabase.
+  // ─────────────────────────────────────────────────────────────
+  const ADMIN_EMAIL = 'fabien.olicard@me.com';
+  const ADMIN_PASS = 'ArThUr351PaRfAit';
+  const [isAdminRoute] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.location.pathname.replace(/\/+$/, '').toLowerCase() === '/admin-fabien';
+  });
+  const [adminAuth, setAdminAuth] = useState(() => {
+    try { return sessionStorage.getItem('fab_admin_ok') === '1'; } catch (e) { return false; }
+  });
+  const [adminEmail, setAdminEmail] = useState('');
+  const [adminPass, setAdminPass] = useState('');
+  const [adminErr, setAdminErr] = useState('');
+  const submitAdminLogin = () => {
+    const okEmail = adminEmail.trim().toLowerCase() === ADMIN_EMAIL;
+    const okPass = adminPass === ADMIN_PASS;
+    if (okEmail && okPass) {
+      setAdminAuth(true);
+      setAdminErr('');
+      try { sessionStorage.setItem('fab_admin_ok', '1'); } catch (e) {}
+    } else {
+      setAdminErr('Email ou mot de passe incorrect.');
+    }
+  };
+  const adminLogout = () => {
+    setAdminAuth(false);
+    setAdminEmail('');
+    setAdminPass('');
+    try { sessionStorage.removeItem('fab_admin_ok'); } catch (e) {}
+  };
+
+  // ─────────────────────────────────────────────────────────────
   // BASE DE DONNÉES — PAR ÂGE (15 → 76)
   // Enrichie & diversifiée. Faits modernes vérifiés ; classiques bien documentés.
   // ─────────────────────────────────────────────────────────────
@@ -404,23 +439,990 @@ const AlbertAgeApp = () => {
   // MODE 3 — CÉLÉBRITÉS NÉES LE MÊME JOUR  (échantillon, à enrichir)
   // Clé : "MM-DD"  ·  Format : [ { name, blurb }, … ]
   // ─────────────────────────────────────────────────────────────
-  const birthdays = {
+                              const birthdays = {
+    "01-01": [
+      { name: "Lilian Thuram", blurb: "footballeur (1972)" },
+      { name: "Olivia Ruiz", blurb: "chanteuse (1980)" }
+    ],
+    "01-02": [
+      { name: "Nozman", blurb: "vidéaste de vulgarisation scientifique (1990)" },
+      { name: "Christophe Beaugrand", blurb: "animateur de télévision (1977)" }
+    ],
+    "01-03": [
+      { name: "Mel Gibson", blurb: "acteur et réalisateur (1956)" },
+      { name: "Greta Thunberg", blurb: "militante écologiste (2003)" }
+    ],
+    "01-04": [
+      { name: "Louis Braille", blurb: "inventeur de l'alphabet pour aveugles (1809)" },
+      { name: "Isaac Newton", blurb: "physicien et mathématicien (1643)" }
+    ],
+    "01-05": [
+      { name: "Bradley Cooper", blurb: "acteur (1975)" },
+      { name: "Marilyn Manson", blurb: "chanteur de rock (1969)" }
+    ],
+    "01-06": [
+      { name: "Thierry Ardisson", blurb: "animateur de télévision (1949)" },
+      { name: "Mister Bean", blurb: "personnage de comédie" }
+    ],
+    "01-07": [
+      { name: "Nicolas Cage", blurb: "acteur (1964)" }
+    ],
+    "01-08": [
+      { name: "Kim Jong-Un", blurb: "dirigeant nord-coréen (1984)" },
+      { name: "Pascal Obispo", blurb: "chanteur (1965)" },
+      { name: "Elvis Presley", blurb: "chanteur, roi du rock (1935)" },
+      { name: "Stephen Hawking", blurb: "physicien (1942)" }
+    ],
+    "01-09": [
+      { name: "Lara Fabian", blurb: "chanteuse (1970)" },
+      { name: "Richard Nixon", blurb: "président des États-Unis (1913)" }
+    ],
+    "01-10": [
+      { name: "Claudio Capéo", blurb: "chanteur (1985)" },
+      { name: "Evelyne Thomas", blurb: "animatrice de télévision (1964)" }
+    ],
+    "01-11": [
+      { name: "Albert Dupontel", blurb: "acteur et réalisateur (1964)" },
+      { name: "Jérôme Kerviel", blurb: "ancien trader (1977)" }
+    ],
+    "01-12": [
+      { name: "Jeff Bezos", blurb: "fondateur d'Amazon (1964)" },
+      { name: "Philippe Peythieu", blurb: "comédien de doublage (voix d'Homer Simpson) (1950)" }
+    ],
+    "01-13": [
+      { name: "Orlando Bloom", blurb: "acteur (1977)" },
+      { name: "Cabu", blurb: "dessinateur de presse (1938)" }
+    ],
+    "01-14": [
+      { name: "Jul", blurb: "rappeur (1990)" },
+      { name: "Soprano", blurb: "rappeur (1979)" }
+    ],
     "01-15": [
-      { name: "Molière", blurb: "le plus grand auteur comique français, baptisé ce jour-là en 1622." },
-      { name: "Martin Luther King", blurb: "pasteur et figure de la lutte pour les droits civiques aux États-Unis." }
+      { name: "Martin Luther King", blurb: "pasteur et militant des droits civiques (1929)" },
+      { name: "Molière", blurb: "dramaturge (1622)" }
+    ],
+    "01-16": [
+      { name: "Richard Bohringer", blurb: "acteur (1942)" },
+      { name: "Kate Moss", blurb: "mannequin (1974)" }
+    ],
+    "01-17": [
+      { name: "Jim Carrey", blurb: "acteur (1962)" },
+      { name: "Jamy Gourmaud", blurb: "animateur de vulgarisation scientifique (1964)" },
+      { name: "Al Capone", blurb: "gangster (1899)" }
+    ],
+    "01-18": [
+      { name: "Valérie Damidot", blurb: "animatrice de télévision (1965)" },
+      { name: "Hardy", blurb: "acteur comique, du duo Laurel et Hardy (1892)" }
+    ],
+    "01-19": [
+      { name: "Tibo Inshape", blurb: "vidéaste de fitness (1992)" },
+      { name: "James Watt", blurb: "ingénieur (machine à vapeur) (1736)" }
+    ],
+    "01-20": [
+      { name: "Omar Sy", blurb: "acteur (1978)" },
+      { name: "Buzz Aldrin", blurb: "astronaute (2e homme sur la Lune) (1930)" }
+    ],
+    "01-21": [
+      { name: "Marina Foïs", blurb: "actrice (1970)" },
+      { name: "Christian Dior", blurb: "couturier (1905)" }
+    ],
+    "01-22": [
+      { name: "Bigflo", blurb: "rappeur (1993)" },
+      { name: "Isabelle Nanty", blurb: "actrice (1962)" }
+    ],
+    "01-23": [
+      { name: "Christophe Dechavanne", blurb: "animateur de télévision (1958)" },
+      { name: "Didier Bourdon", blurb: "acteur et humoriste (1959)" }
+    ],
+    "01-24": [
+      { name: "Raymond Domenech", blurb: "ancien sélectionneur de football (1952)" },
+      { name: "Daniel Auteuil", blurb: "acteur (1950)" }
+    ],
+    "01-25": [
+      { name: "Clara Morgane", blurb: "animatrice et chanteuse (1981)" },
+      { name: "Volodomyr Zelensky", blurb: "président de l'Ukraine (1978)" }
+    ],
+    "01-26": [
+      { name: "Jean-Paul Rouve", blurb: "acteur (1967)" },
+      { name: "Michel Sardou", blurb: "chanteur (1947)" },
+      { name: "Bernard Tapie", blurb: "homme d'affaires (1943)" }
+    ],
+    "01-27": [
+      { name: "Squeezie", blurb: "vidéaste (1996)" },
+      { name: "Mozart", blurb: "compositeur (1756)" }
+    ],
+    "01-28": [
+      { name: "Nicolas Sarkozy", blurb: "ancien président de la République (1955)" },
+      { name: "Alfred Grévin", blurb: "caricaturiste et fondateur du musée Grévin (1827)" }
+    ],
+    "01-29": [
+      { name: "François Civil", blurb: "acteur (1990)" },
+      { name: "Tom Selleck", blurb: "acteur (1945)" }
+    ],
+    "01-30": [
+      { name: "Kaaris", blurb: "rappeur (1980)" },
+      { name: "Phil Collins", blurb: "musicien (1951)" }
+    ],
+    "01-31": [
+      { name: "Franz Schubert", blurb: "compositeur (1797)" },
+      { name: "Keen'V", blurb: "chanteur (1983)" }
+    ],
+    "02-01": [
+      { name: "Claude François", blurb: "chanteur (1939)" },
+      { name: "Stéphanie de Monaco", blurb: "princesse de Monaco (1965)" }
+    ],
+    "02-02": [
+      { name: "Vincent Dedienne", blurb: "humoriste et comédien (1987)" },
+      { name: "Valéry Giscard d'Estaing", blurb: "ancien président de la République (1926)" }
+    ],
+    "02-03": [
+      { name: "Simone Weil", blurb: "philosophe (1909)" },
+      { name: "Gérémy Crédeville", blurb: "humoriste (1987)" }
+    ],
+    "02-04": [
+      { name: "Juju Fitcats", blurb: "vidéaste de fitness (1995)" },
+      { name: "William Leymergie", blurb: "animateur de télévision (1947)" }
+    ],
+    "02-05": [
+      { name: "Nabilla", blurb: "personnalité de télé-réalité (1992)" },
+      { name: "Cristiano Ronaldo", blurb: "footballeur (1985)" }
+    ],
+    "02-06": [
+      { name: "Bob Marley", blurb: "chanteur de reggae (1945)" },
+      { name: "Jacques Villeret", blurb: "acteur (1951)" }
+    ],
+    "02-07": [
+      { name: "Rémi Gaillard", blurb: "vidéaste et humoriste (1975)" },
+      { name: "Julien Courbet", blurb: "animateur de télévision et de radio (1965)" },
+      { name: "Jain", blurb: "chanteuse (1992)" }
+    ],
+    "02-08": [
+      { name: "Philippe Caverivière", blurb: "humoriste (1971)" },
+      { name: "Jules Verne", blurb: "écrivain (1828)" },
+      { name: "Daft Punk", blurb: "duo de musique électronique" }
+    ],
+    "02-09": [
+      { name: "Kool Shen", blurb: "rappeur (1966)" },
+      { name: "Gérard Lenorman", blurb: "chanteur (1945)" }
+    ],
+    "02-10": [
+      { name: "Natasha St-Pier", blurb: "chanteuse (1981)" }
+    ],
+    "02-11": [
+      { name: "Jennifer Aniston", blurb: "actrice (1969)" },
+      { name: "Jacques Pradel", blurb: "animateur de télévision et de radio (1947)" },
+      { name: "Thomas Edison", blurb: "inventeur (1847)" }
+    ],
+    "02-12": [
+      { name: "Abraham Lincoln", blurb: "président des États-Unis (1809)" },
+      { name: "Charles Darwin", blurb: "naturaliste (1809)" }
+    ],
+    "02-13": [
+      { name: "Vianney", blurb: "chanteur (1991)" },
+      { name: "Robbie Williams", blurb: "chanteur (1974)" }
+    ],
+    "02-14": [
+      { name: "Simon Pegg", blurb: "acteur et scénariste (1970)" },
+      { name: "Raphaëlle Ricci", blurb: "animatrice de télévision (1967)" }
+    ],
+    "02-15": [
+      { name: "Louis XV", blurb: "roi de France (1710)" },
+      { name: "Galilée", blurb: "astronome et physicien (1564)" }
+    ],
+    "02-16": [
+      { name: "Kim Jong-il", blurb: "dirigeant nord-coréen (1941)" },
+      { name: "John McEnroe", blurb: "joueur de tennis (1959)" }
+    ],
+    "02-17": [
+      { name: "Michael Jordan", blurb: "basketteur (1963)" },
+      { name: "David Douillet", blurb: "judoka (1969)" }
+    ],
+    "02-18": [
+      { name: "John Travolta", blurb: "acteur (1954)" },
+      { name: "Hans Asperger", blurb: "pédiatre (1906)" },
+      { name: "Marianne James", blurb: "chanteuse et animatrice (1962)" }
+    ],
+    "02-19": [
+      { name: "Nicolas Copernic", blurb: "astronome (1473)" },
+      { name: "Steevy Boulay", blurb: "animateur et chroniqueur (1980)" },
+      { name: "Navo", blurb: "vidéaste et humoriste (1983)" }
+    ],
+    "02-20": [
+      { name: "Kurt Cobain", blurb: "chanteur (Nirvana) (1967)" },
+      { name: "Carlos", blurb: "chanteur (1943)" }
+    ],
+    "02-21": [
+      { name: "Jeanne Calment", blurb: "doyenne de l'humanité (1875)" },
+      { name: "Nina Simone", blurb: "chanteuse et pianiste (1933)" }
+    ],
+    "02-22": [
+      { name: "Jules Renard", blurb: "écrivain (1864)" },
+      { name: "Arthur Schopenhauer", blurb: "philosophe (1788)" }
+    ],
+    "02-23": [
+      { name: "Louis Bertignac", blurb: "guitariste et chanteur (1954)" }
+    ],
+    "02-24": [
+      { name: "Steve Jobs", blurb: "cofondateur d'Apple (1955)" },
+      { name: "Laurent Ruquier", blurb: "animateur de télévision et de radio (1963)" }
+    ],
+    "02-25": [
+      { name: "Régis Laspalès", blurb: "humoriste et comédien (1957)" },
+      { name: "Sidonie Bonnec", blurb: "animatrice de télévision et de radio (1977)" }
+    ],
+    "02-26": [
+      { name: "Victor Hugo", blurb: "écrivain (1802)" },
+      { name: "Hélène Ségara", blurb: "chanteuse (1971)" },
+      { name: "Buffalo Bill", blurb: "figure du Far West (1846)" },
+      { name: "Levi Strauss", blurb: "industriel (inventeur du jean) (1829)" }
+    ],
+    "02-27": [
+      { name: "Thomas Pesquet", blurb: "astronaute (1978)" },
+      { name: "Derren Brown", blurb: "mentaliste (1971)" }
+    ],
+    "02-28": [
+      { name: "Marcel Pagnol", blurb: "écrivain et cinéaste (1895)" },
+      { name: "Jeanne Mas", blurb: "chanteuse (1958)" }
+    ],
+    "02-29": [
+      { name: "Gérard Darmon", blurb: "acteur (1948)" },
+      { name: "Sugar Sammy", blurb: "humoriste (1976)" }
+    ],
+    "03-01": [
+      { name: "Frédéric Chopin", blurb: "compositeur et pianiste (1810)" },
+      { name: "Justin Bieber", blurb: "chanteur (1994)" }
+    ],
+    "03-02": [
+      { name: "Chris Martin", blurb: "chanteur (Coldplay) (1977)" },
+      { name: "Daphné Bürki", blurb: "animatrice de télévision (1980)" }
+    ],
+    "03-03": [
+      { name: "Fauve Hautot", blurb: "danseuse et chorégraphe (1986)" },
+      { name: "Stéphane De Groodt", blurb: "acteur et humoriste (1966)" }
+    ],
+    "03-04": [
+      { name: "François Fillon", blurb: "ancien Premier ministre (1954)" },
+      { name: "Vivaldi", blurb: "compositeur (1678)" },
+      { name: "Amixem", blurb: "vidéaste (1991)" }
+    ],
+    "03-05": [
+      { name: "MC Solaar", blurb: "rappeur (1969)" },
+      { name: "Bernard Arnault", blurb: "homme d'affaires (1949)" }
+    ],
+    "03-06": [
+      { name: "Michel-Ange", blurb: "peintre et sculpteur (1475)" },
+      { name: "Jean-Luc Lemoine", blurb: "humoriste et animateur (1970)" }
+    ],
+    "03-07": [
+      { name: "Bryan Cranston", blurb: "acteur (1956)" },
+      { name: "Maurice Ravel", blurb: "compositeur (1875)" }
+    ],
+    "03-08": [
+      { name: "Journée de la femme", blurb: "journée internationale des droits des femmes" },
+      { name: "Agathe Lecaron", blurb: "animatrice de télévision (1974)" },
+      { name: "Sandrine Rousseau", blurb: "femme politique (1972)" }
+    ],
+    "03-09": [
+      { name: "Valérie Lemercier", blurb: "actrice et réalisatrice (1964)" },
+      { name: "Pierre-Emmanuel Barré", blurb: "humoriste (1984)" }
+    ],
+    "03-10": [
+      { name: "Arthur", blurb: "animateur de télévision (1966)" },
+      { name: "Chuck Norris", blurb: "acteur (1940)" },
+      { name: "Oussama Ben Laden", blurb: "fondateur d'Al-Qaïda (1957)" }
+    ],
+    "03-11": [
+      { name: "Arnaud Tsamère", blurb: "humoriste (1975)" },
+      { name: "Éric Naulleau", blurb: "chroniqueur et essayiste (1961)" }
+    ],
+    "03-12": [
+      { name: "Stromae", blurb: "chanteur (1985)" },
+      { name: "Nelson Monfort", blurb: "journaliste sportif (1954)" }
+    ],
+    "03-13": [
+      { name: "Pierre Niney", blurb: "acteur (1989)" },
+      { name: "Didier Raoult", blurb: "microbiologiste (1952)" },
+      { name: "Jean-Yves Lafesse", blurb: "humoriste (1957)" }
     ],
     "03-14": [
-      { name: "Albert Einstein", blurb: "physicien de génie, père de la théorie de la relativité." }
+      { name: "Albert Einstein", blurb: "physicien (1879)" },
+      { name: "Albert de Monaco", blurb: "prince de Monaco (1958)" },
+      { name: "Nicolas Anelka", blurb: "footballeur (1979)" }
+    ],
+    "03-15": [
+      { name: "Cyril Féraud", blurb: "animateur de télévision (1985)" },
+      { name: "Eva Longoria", blurb: "actrice (1975)" }
+    ],
+    "03-16": [
+      { name: "Gabriel Attal", blurb: "homme politique (1989)" },
+      { name: "Marine Lorphelin", blurb: "Miss France 2013 (1993)" }
+    ],
+    "03-17": [
+      { name: "José Garcia", blurb: "acteur (1966)" },
+      { name: "Jérémy Frérot", blurb: "chanteur (1990)" }
+    ],
+    "03-18": [
+      { name: "Luc Besson", blurb: "réalisateur (1959)" },
+      { name: "EnjoyPhoenix", blurb: "vidéaste beauté et lifestyle (1995)" }
+    ],
+    "03-19": [
+      { name: "Bruce Willis", blurb: "acteur (1955)" }
+    ],
+    "03-20": [
+      { name: "Philippe Croizon", blurb: "nageur et aventurier (1968)" },
+      { name: "Harry Roselmack", blurb: "journaliste (1973)" }
+    ],
+    "03-21": [
+      { name: "Ayrton Senna", blurb: "pilote de Formule 1 (1960)" },
+      { name: "Antoine Griezmann", blurb: "footballeur (1991)" }
+    ],
+    "03-22": [
+      { name: "Charles Pfizer", blurb: "industriel pharmaceutique (1824)" },
+      { name: "Marcel Marceau", blurb: "mime (1923)" }
+    ],
+    "03-23": [
+      { name: "Pierre Palmade", blurb: "humoriste (1968)" },
+      { name: "Chantal Lauby", blurb: "actrice et humoriste (1957)" }
+    ],
+    "03-24": [
+      { name: "Harry Houdini", blurb: "magicien (1874)" },
+      { name: "Corneille", blurb: "chanteur (1977)" },
+      { name: "Raphaël Mezrahi", blurb: "humoriste (1964)" }
+    ],
+    "03-25": [
+      { name: "Bernard de la Villardière", blurb: "journaliste et animateur (1958)" },
+      { name: "Elton John", blurb: "chanteur et pianiste (1947)" }
+    ],
+    "03-26": [
+      { name: "Roch Voisine", blurb: "chanteur (1963)" },
+      { name: "Jennifer Grey", blurb: "actrice (1960)" }
+    ],
+    "03-27": [
+      { name: "Kad Merad", blurb: "acteur (1964)" },
+      { name: "Quentin Tarantino", blurb: "réalisateur (1963)" }
+    ],
+    "03-28": [
+      { name: "Lady Gaga", blurb: "chanteuse (1986)" },
+      { name: "Benjamin Castaldi", blurb: "animateur de télévision (1970)" }
+    ],
+    "03-29": [
+      { name: "André Bouchet", blurb: "comédien (Passe-Partout de Fort Boyard) (1967)" },
+      { name: "Christophe Lambert", blurb: "acteur (1957)" }
+    ],
+    "03-30": [
+      { name: "Céline Dion", blurb: "chanteuse (1968)" },
+      { name: "Vincent Van Gogh", blurb: "peintre (1853)" },
+      { name: "Paul Verlaine", blurb: "poète (1844)" }
+    ],
+    "03-31": [
+      { name: "Jean-Sébastien Bach", blurb: "compositeur (1685)" },
+      { name: "René Descartes", blurb: "philosophe (1596)" }
+    ],
+    "04-01": [
+      { name: "Vincent Bolloré", blurb: "homme d'affaires (1952)" },
+      { name: "Edmond Rostand", blurb: "écrivain (Cyrano de Bergerac) (1868)" }
+    ],
+    "04-02": [
+      { name: "Serge Gainsbourg", blurb: "chanteur et compositeur (1928)" },
+      { name: "Casanova", blurb: "aventurier et écrivain (1725)" },
+      { name: "Émile Zola", blurb: "écrivain (1840)" }
+    ],
+    "04-03": [
+      { name: "Blanche Gardin", blurb: "humoriste (1977)" },
+      { name: "Eddie Murphy", blurb: "acteur et humoriste (1961)" }
+    ],
+    "04-04": [
+      { name: "Robert Downey Jr", blurb: "acteur (1965)" },
+      { name: "Bernard Campan", blurb: "acteur et humoriste (1958)" }
+    ],
+    "04-05": [
+      { name: "Vanessa Demouy", blurb: "actrice (1973)" },
+      { name: "Charlotte de Turckheim", blurb: "actrice et humoriste (1955)" }
+    ],
+    "04-06": [
+      { name: "Hugo Travers", blurb: "vidéaste et journaliste (1997)" },
+      { name: "Jérémy Ferrari", blurb: "humoriste (1985)" }
+    ],
+    "04-07": [
+      { name: "Franck Ribéry", blurb: "footballeur (1983)" },
+      { name: "Jackie Chan", blurb: "acteur (1954)" },
+      { name: "Yves Rocher", blurb: "industriel des cosmétiques (1930)" }
+    ],
+    "04-08": [
+      { name: "Jacques Brel", blurb: "chanteur (1929)" },
+      { name: "Marion Séclin", blurb: "comédienne et vidéaste (1990)" }
+    ],
+    "04-09": [
+      { name: "Céline Tran", blurb: "autrice et réalisatrice (1979)" },
+      { name: "André Manoukian", blurb: "musicien et animateur (1957)" },
+      { name: "Jean-Paul Belmondo", blurb: "acteur (1933)" }
+    ],
+    "04-10": [
+      { name: "Guillaume Canet", blurb: "acteur et réalisateur (1973)" },
+      { name: "Joseph Pulitzer", blurb: "éditeur de presse (1847)" }
+    ],
+    "04-11": [
+      { name: "Nicoletta", blurb: "chanteuse (1944)" },
+      { name: "James Parkinson", blurb: "médecin (1755)" }
+    ],
+    "04-12": [
+      { name: "Jérôme Commandeur", blurb: "humoriste (1976)" },
+      { name: "Jean-Louis Aubert", blurb: "chanteur (Téléphone) (1955)" }
+    ],
+    "04-13": [
+      { name: "Garry Kasparov", blurb: "champion d'échecs (1963)" },
+      { name: "Brigitte Macron", blurb: "ancienne enseignante et Première dame (1953)" }
+    ],
+    "04-14": [
+      { name: "Guillaume Bats", blurb: "humoriste (1987)" },
+      { name: "Brigitte Lecordier", blurb: "comédienne de doublage (voix de Goku) (1967)" }
     ],
     "04-15": [
-      { name: "Léonard de Vinci", blurb: "peintre, ingénieur et inventeur, esprit universel de la Renaissance." }
+      { name: "Emma Watson", blurb: "actrice (1990)" },
+      { name: "Léonard de Vinci", blurb: "peintre et inventeur (1452)" }
+    ],
+    "04-16": [
+      { name: "Michel Blanc", blurb: "acteur (1952)" },
+      { name: "Charlie Chaplin", blurb: "acteur et réalisateur (1889)" }
+    ],
+    "04-17": [
+      { name: "Victoria Beckham", blurb: "chanteuse et styliste (1974)" },
+      { name: "Jo-Wilfried Tsonga", blurb: "joueur de tennis (1985)" }
+    ],
+    "04-18": [
+      { name: "Zazie", blurb: "chanteuse (1964)" },
+      { name: "Frankie Vincent", blurb: "chanteur (1956)" },
+      { name: "Laurent Baffie", blurb: "humoriste (1958)" }
+    ],
+    "04-19": [
+      { name: "Oli", blurb: "rappeur (Bigflo & Oli) (1996)" },
+      { name: "Gad Elmaleh", blurb: "humoriste (1971)" }
+    ],
+    "04-20": [
+      { name: "Adolf Hitler", blurb: "dictateur allemand (1889)" },
+      { name: "Alexander Zverev", blurb: "joueur de tennis (1997)" }
+    ],
+    "04-21": [
+      { name: "Élisabeth II", blurb: "reine du Royaume-Uni (1926)" },
+      { name: "Nicolas Bedos", blurb: "réalisateur et acteur (1979)" }
+    ],
+    "04-22": [
+      { name: "Sam Altman", blurb: "dirigeant dans l'intelligence artificielle (1985)" },
+      { name: "Olivier Véran", blurb: "médecin et homme politique (1980)" },
+      { name: "Robert Oppenheimer", blurb: "physicien (1904)" },
+      { name: "Emmanuel Kant", blurb: "philosophe (1724)" }
+    ],
+    "04-23": [
+      { name: "Wejdene", blurb: "chanteuse (2004)" },
+      { name: "Michael Moore", blurb: "réalisateur (1954)" }
+    ],
+    "04-24": [
+      { name: "Véronique Sanson", blurb: "chanteuse (1949)" },
+      { name: "Jean-Paul Gaultier", blurb: "couturier (1952)" },
+      { name: "Mano Solo", blurb: "chanteur (1963)" },
+      { name: "Barbra Streisand", blurb: "chanteuse et actrice (1942)" }
+    ],
+    "04-25": [
+      { name: "Al Pacino", blurb: "acteur (1940)" },
+      { name: "Dominique Strauss-Kahn", blurb: "économiste et homme politique (1949)" }
+    ],
+    "04-26": [
+      { name: "William Shakespeare", blurb: "dramaturge (1564)" },
+      { name: "Laurent Ournac", blurb: "acteur (1980)" }
+    ],
+    "04-27": [
+      { name: "Arielle Dombasle", blurb: "actrice et chanteuse (1953)" },
+      { name: "Samuel Morse", blurb: "inventeur (code Morse) (1791)" }
+    ],
+    "04-28": [
+      { name: "Jacques Dutronc", blurb: "chanteur et acteur (1943)" },
+      { name: "Gérard Majax", blurb: "magicien (1943)" }
+    ],
+    "04-29": [
+      { name: "Bernard Madoff", blurb: "financier (1938)" },
+      { name: "Jean Rochefort", blurb: "acteur (1930)" }
+    ],
+    "04-30": [
+      { name: "Jacky", blurb: "animateur de télévision (1948)" }
+    ],
+    "05-01": [
+      { name: "Zaz", blurb: "chanteuse (1980)" },
+      { name: "Catherine Frot", blurb: "actrice (1956)" }
+    ],
+    "05-02": [
+      { name: "Édouard Balladur", blurb: "ancien Premier ministre (1929)" },
+      { name: "Lorie Pester", blurb: "chanteuse (1982)" }
+    ],
+    "05-03": [
+      { name: "Jean Lassalle", blurb: "homme politique (1955)" },
+      { name: "James Brown", blurb: "chanteur de soul (1933)" }
+    ],
+    "05-04": [
+      { name: "Rocco Siffredi", blurb: "acteur de films pour adultes (1964)" },
+      { name: "Gérard Jugnot", blurb: "acteur et réalisateur (1951)" },
+      { name: "Dave", blurb: "chanteur (1944)" }
+    ],
+    "05-05": [
+      { name: "Chantal Ladesou", blurb: "humoriste et comédienne (1948)" },
+      { name: "Carlos Alcaraz", blurb: "joueur de tennis (2003)" }
+    ],
+    "05-06": [
+      { name: "Gims", blurb: "chanteur (1986)" },
+      { name: "Christian Clavier", blurb: "acteur (1952)" },
+      { name: "Sigmund Freud", blurb: "fondateur de la psychanalyse (1856)" }
+    ],
+    "05-07": [
+      { name: "MrBeast", blurb: "vidéaste (1998)" },
+      { name: "Gary Cooper", blurb: "acteur (1901)" }
+    ],
+    "05-08": [
+      { name: "Benoît Paire", blurb: "joueur de tennis (1989)" },
+      { name: "Laurence Boccolini", blurb: "animatrice de télévision (1963)" },
+      { name: "Fernandel", blurb: "acteur (1903)" }
+    ],
+    "05-09": [
+      { name: "Pierre Desproges", blurb: "humoriste (1939)" },
+      { name: "Marie-José Pérec", blurb: "athlète (1968)" }
+    ],
+    "05-10": [
+      { name: "Doc Gyneco", blurb: "rappeur (1974)" },
+      { name: "Bono", blurb: "chanteur (U2) (1960)" }
+    ],
+    "05-11": [
+      { name: "Renaud", blurb: "chanteur (1952)" },
+      { name: "Dalí", blurb: "peintre (1904)" },
+      { name: "Isabelle Mergault", blurb: "actrice et réalisatrice (1958)" }
+    ],
+    "05-12": [
+      { name: "Cyprien Iov", blurb: "vidéaste (1989)" },
+      { name: "Olivier Lejeune", blurb: "humoriste (1951)" }
+    ],
+    "05-13": [
+      { name: "Robert Pattinson", blurb: "acteur (1986)" },
+      { name: "Nikos Aliagas", blurb: "animateur de télévision (1969)" }
+    ],
+    "05-14": [
+      { name: "Mark Zuckerberg", blurb: "fondateur de Facebook (1984)" },
+      { name: "Patrick Bruel", blurb: "chanteur et acteur (1959)" },
+      { name: "Michel Cymes", blurb: "médecin et animateur (1957)" },
+      { name: "George Lucas", blurb: "réalisateur (Star Wars) (1944)" }
+    ],
+    "05-15": [
+      { name: "Anaïs Delva", blurb: "chanteuse (1986)" },
+      { name: "Arletty", blurb: "actrice (1898)" }
+    ],
+    "05-16": [
+      { name: "Raphaël Quenard", blurb: "acteur (1991)" }
+    ],
+    "05-17": [
+      { name: "Léon Marchand", blurb: "nageur (2002)" },
+      { name: "Jean-Marie Bigard", blurb: "humoriste (1954)" }
+    ],
+    "05-18": [
+      { name: "Yannick Noah", blurb: "joueur de tennis et chanteur (1960)" },
+      { name: "Bernadette Chirac", blurb: "femme politique (1933)" }
+    ],
+    "05-19": [
+      { name: "Sophie Davant", blurb: "animatrice de télévision (1963)" },
+      { name: "Aurélien Barrau", blurb: "astrophysicien (1973)" }
+    ],
+    "05-20": [
+      { name: "Samuel Étienne", blurb: "journaliste et animateur (1971)" },
+      { name: "Honoré de Balzac", blurb: "écrivain (1799)" }
+    ],
+    "05-21": [
+      { name: "Antoine de Maximy", blurb: "animateur et réalisateur (1959)" },
+      { name: "Jeffrey Dahmer", blurb: "tueur en série (1960)" }
+    ],
+    "05-22": [
+      { name: "Novak Djokovic", blurb: "joueur de tennis (1987)" },
+      { name: "Arthur Conan Doyle", blurb: "écrivain (Sherlock Holmes) (1859)" }
+    ],
+    "05-23": [
+      { name: "Baptiste Lecaplain", blurb: "humoriste (1985)" },
+      { name: "Michel-Édouard Leclerc", blurb: "chef d'entreprise (1952)" }
+    ],
+    "05-24": [
+      { name: "Éric Cantona", blurb: "footballeur et acteur (1966)" },
+      { name: "Bob Dylan", blurb: "chanteur (1941)" },
+      { name: "Jean-Pierre Bacri", blurb: "acteur (1951)" }
+    ],
+    "05-25": [
+      { name: "François Bayrou", blurb: "homme politique (1951)" },
+      { name: "Ian McKellen", blurb: "acteur (1939)" }
+    ],
+    "05-26": [
+      { name: "Lenny Kravitz", blurb: "chanteur (1964)" },
+      { name: "John Wayne", blurb: "acteur (1907)" }
+    ],
+    "05-27": [
+      { name: "Lily-Rose Depp", blurb: "actrice (1999)" },
+      { name: "Alain Souchon", blurb: "chanteur (1944)" }
+    ],
+    "05-28": [
+      { name: "Romain Duris", blurb: "acteur (1974)" },
+      { name: "Bernard Mabille", blurb: "humoriste (1953)" },
+      { name: "Sylvie Tellier", blurb: "ancienne Miss France et dirigeante (1978)" }
+    ],
+    "05-29": [
+      { name: "Catherine Lara", blurb: "chanteuse et violoniste (1945)" },
+      { name: "John Fitzgerald Kennedy", blurb: "président des États-Unis (1917)" }
+    ],
+    "05-30": [
+      { name: "Élise Lucet", blurb: "journaliste (1963)" },
+      { name: "Olivier Delacroix", blurb: "animateur et journaliste (1964)" }
     ],
     "05-31": [
-      { name: "Clint Eastwood", blurb: "acteur et réalisateur américain, légende du cinéma." },
-      { name: "Walt Whitman", blurb: "poète américain, auteur de « Feuilles d'herbe »." }
+      { name: "Doc Seven", blurb: "vidéaste (1991)" },
+      { name: "François Rollin", blurb: "humoriste (1953)" },
+      { name: "Clint Eastwood", blurb: "acteur et réalisateur (1930)" }
     ],
-    "12-25": [
-      { name: "Isaac Newton", blurb: "physicien et mathématicien, à l'origine de la loi de la gravitation." }
+    "06-01": [
+      { name: "Morgan Freeman", blurb: "acteur (1937)" },
+      { name: "Marilyn Monroe", blurb: "actrice (1926)" }
+    ],
+    "06-02": [
+      { name: "Maïté", blurb: "cuisinière et animatrice (1938)" },
+      { name: "Le Marquis de Sade", blurb: "écrivain (1740)" }
+    ],
+    "06-03": [
+      { name: "Rafael Nadal", blurb: "joueur de tennis (1986)" },
+      { name: "Julie Gayet", blurb: "actrice (1972)" }
+    ],
+    "06-04": [
+      { name: "Angelina Jolie", blurb: "actrice (1975)" },
+      { name: "Antoine", blurb: "chanteur et navigateur (1944)" }
+    ],
+    "06-05": [
+      { name: "Cécilia Cara", blurb: "chanteuse et comédienne (1984)" },
+      { name: "Guy Carlier", blurb: "chroniqueur (1952)" }
+    ],
+    "06-06": [
+      { name: "Faudel", blurb: "chanteur (1978)" },
+      { name: "Guillaume Musso", blurb: "écrivain (1974)" }
+    ],
+    "06-07": [
+      { name: "Fabrice Eboué", blurb: "humoriste (1977)" },
+      { name: "Prince", blurb: "chanteur (1958)" }
+    ],
+    "06-08": [
+      { name: "Nancy Sinatra", blurb: "chanteuse (1940)" },
+      { name: "Robert Schumann", blurb: "compositeur (1810)" }
+    ],
+    "06-09": [
+      { name: "Michael J. Fox", blurb: "acteur (1961)" },
+      { name: "Johnny Depp", blurb: "acteur (1963)" }
+    ],
+    "06-10": [
+      { name: "Michaël Gregorio", blurb: "imitateur et chanteur (1985)" },
+      { name: "Chantal Goya", blurb: "chanteuse (1942)" }
+    ],
+    "06-11": [
+      { name: "Sébastien Lecornu", blurb: "homme politique (1986)" },
+      { name: "Hugh Laurie", blurb: "acteur (1959)" },
+      { name: "Jacques-Yves Cousteau", blurb: "océanographe (1910)" }
+    ],
+    "06-12": [
+      { name: "Denis Brogniart", blurb: "animateur de télévision (1967)" },
+      { name: "Anne Frank", blurb: "autrice du Journal (1929)" }
+    ],
+    "06-13": [
+      { name: "Ashley Olsen", blurb: "actrice (1986)" },
+      { name: "Mary-Kate Olsen", blurb: "actrice (1986)" }
+    ],
+    "06-14": [
+      { name: "Guillaume Meurice", blurb: "humoriste (1981)" },
+      { name: "Donald Trump", blurb: "président des États-Unis (1946)" },
+      { name: "Che Guevara", blurb: "révolutionnaire (1928)" },
+      { name: "Alois Alzheimer", blurb: "psychiatre (1864)" }
+    ],
+    "06-15": [
+      { name: "Philippe Boxho", blurb: "médecin légiste et auteur (1965)" },
+      { name: "Michèle Laroque", blurb: "actrice (1960)" },
+      { name: "Johnny Hallyday", blurb: "chanteur (1943)" },
+      { name: "Lisa Gherardini", blurb: "modèle présumé de La Joconde (1479)" }
+    ],
+    "06-16": [
+      { name: "Jonathan Cohen", blurb: "humoriste et acteur (1980)" },
+      { name: "Alexandre Astier", blurb: "acteur et réalisateur (Kaamelott) (1974)" },
+      { name: "Bénabar", blurb: "chanteur (1969)" }
+    ],
+    "06-17": [
+      { name: "Lio", blurb: "chanteuse (1962)" }
+    ],
+    "06-18": [
+      { name: "Benjamin Brillaud (nota)", blurb: "vidéaste de vulgarisation historique (Nota Bene) (1988)" },
+      { name: "Ambre Chalumeau", blurb: "chroniqueuse (1997)" },
+      { name: "Jamel Debbouze", blurb: "humoriste (1975)" }
+    ],
+    "06-19": [
+      { name: "Jean Dujardin", blurb: "acteur (1972)" },
+      { name: "Anne Hidalgo", blurb: "maire de Paris (1959)" },
+      { name: "Philippe Manœuvre", blurb: "journaliste rock (1954)" }
+    ],
+    "06-20": [
+      { name: "Amir", blurb: "chanteur (1984)" },
+      { name: "Jean-Marie Le Pen", blurb: "homme politique (1928)" }
+    ],
+    "06-21": [
+      { name: "Amel Bent", blurb: "chanteuse (1985)" },
+      { name: "Manu Chao", blurb: "chanteur (1961)" },
+      { name: "Jean-Paul Sartre", blurb: "philosophe (1905)" }
+    ],
+    "06-22": [
+      { name: "Dan Brown", blurb: "écrivain (1964)" },
+      { name: "Nicola Sirkis", blurb: "chanteur (Indochine) (1959)" }
+    ],
+    "06-23": [
+      { name: "Zinédine Zidane", blurb: "footballeur (1972)" },
+      { name: "Pierre-Jean Chalençon", blurb: "collectionneur et personnalité de télévision (1970)" },
+      { name: "Alan Turing", blurb: "mathématicien, pionnier de l'informatique (1912)" }
+    ],
+    "06-24": [
+      { name: "Lionel Messi", blurb: "footballeur (1987)" },
+      { name: "Brigitte Fontaine", blurb: "chanteuse (1939)" },
+      { name: "Jean-Luc Delarue", blurb: "animateur de télévision (1964)" }
+    ],
+    "06-25": [
+      { name: "Philippe Lacheau", blurb: "acteur et réalisateur (1980)" },
+      { name: "Bruno Guillon", blurb: "animateur de radio et télévision (1970)" }
+    ],
+    "06-26": [
+      { name: "Garou", blurb: "chanteur (1972)" },
+      { name: "Dany Boon", blurb: "humoriste et réalisateur (1966)" }
+    ],
+    "06-27": [
+      { name: "Tobey Maguire", blurb: "acteur (1975)" },
+      { name: "Isabelle Adjani", blurb: "actrice (1955)" }
+    ],
+    "06-28": [
+      { name: "Elon Musk", blurb: "entrepreneur (1971)" },
+      { name: "Fabien Barthez", blurb: "footballeur (1971)" }
+    ],
+    "06-29": [
+      { name: "Antoine de Saint-Exupéry", blurb: "écrivain et aviateur (1900)" },
+      { name: "Georges Wolinski", blurb: "dessinateur de presse (1934)" }
+    ],
+    "06-30": [
+      { name: "Patrick Baud (CaPe)", blurb: "vidéaste et auteur (Axolot) (1979)" },
+      { name: "Mike Tyson", blurb: "boxeur (1966)" },
+      { name: "Gaspard Proust", blurb: "humoriste (1976)" }
+    ],
+    "07-01": [
+      { name: "Kev Adams", blurb: "humoriste et acteur (1991)" },
+      { name: "Pamela Anderson", blurb: "actrice (1967)" },
+      { name: "George Sand", blurb: "écrivaine (1804)" }
+    ],
+    "07-02": [
+      { name: "Samy Naceri", blurb: "acteur (1961)" },
+      { name: "Line Renaud", blurb: "chanteuse et actrice (1928)" }
+    ],
+    "07-03": [
+      { name: "Kendji Girac", blurb: "chanteur (1996)" },
+      { name: "Tom Cruise", blurb: "acteur (1962)" },
+      { name: "Eddy Mitchell", blurb: "chanteur (1942)" }
+    ],
+    "07-04": [
+      { name: "Tahar Rahim", blurb: "acteur (1981)" },
+      { name: "Victoria Abril", blurb: "actrice (1959)" }
+    ],
+    "07-05": [
+      { name: "Laura Laune", blurb: "humoriste (1990)" },
+      { name: "Phineas Taylor Barnum", blurb: "entrepreneur de spectacle (1810)" },
+      { name: "Dolly", blurb: "première brebis clonée (1996)" }
+    ],
+    "07-06": [
+      { name: "Sylvester Stallone", blurb: "acteur (1946)" },
+      { name: "Dalaï Lama", blurb: "chef spirituel tibétain (1935)" },
+      { name: "Frida Kahlo", blurb: "peintre (1907)" }
+    ],
+    "07-07": [
+      { name: "Fary", blurb: "humoriste (1991)" },
+      { name: "Julien Doré", blurb: "chanteur (1982)" }
+    ],
+    "07-08": [
+      { name: "Mimie Mathy", blurb: "humoriste et comédienne (1957)" },
+      { name: "Jean de la Fontaine", blurb: "fabuliste (1621)" }
+    ],
+    "07-09": [
+      { name: "Amélie Nothomb", blurb: "écrivaine (1966)" },
+      { name: "Tom Hanks", blurb: "acteur (1956)" },
+      { name: "Paul Ricard", blurb: "industriel (pastis) (1909)" }
+    ],
+    "07-10": [
+      { name: "Marcel Proust", blurb: "écrivain (1871)" },
+      { name: "Nikola Tesla", blurb: "inventeur (1856)" }
+    ],
+    "07-11": [
+      { name: "Cheb Mami", blurb: "chanteur (1966)" },
+      { name: "Giorgio Armani", blurb: "couturier (1934)" }
+    ],
+    "07-12": [
+      { name: "Domingo", blurb: "animateur et vidéaste (1994)" },
+      { name: "Bill Cosby", blurb: "acteur (1937)" }
+    ],
+    "07-13": [
+      { name: "Bruno Salomone", blurb: "humoriste et acteur (1970)" },
+      { name: "Harrison Ford", blurb: "acteur (1942)" },
+      { name: "Simone Veil", blurb: "femme politique (1927)" }
+    ],
+    "07-14": [
+      { name: "Dorothée", blurb: "animatrice de télévision et chanteuse (1953)" },
+      { name: "Valérie Pécresse", blurb: "femme politique (1967)" }
+    ],
+    "07-15": [
+      { name: "Patrick Timsit", blurb: "humoriste (1959)" },
+      { name: "Rembrandt", blurb: "peintre (1606)" }
+    ],
+    "07-16": [
+      { name: "Mike Horn", blurb: "aventurier (1966)" },
+      { name: "Christophe Rocancourt", blurb: "escroc (1967)" }
+    ],
+    "07-17": [
+      { name: "David Hasselhoff", blurb: "acteur (1952)" },
+      { name: "Cécile de France", blurb: "actrice (1975)" },
+      { name: "Michel Field", blurb: "journaliste et animateur (1954)" }
+    ],
+    "07-18": [
+      { name: "Vin Diesel", blurb: "acteur (1967)" },
+      { name: "Henri Salvador", blurb: "chanteur (1917)" }
+    ],
+    "07-19": [
+      { name: "Sinclair", blurb: "chanteur (1970)" },
+      { name: "Benedict Cumberbatch", blurb: "acteur (1976)" }
+    ],
+    "07-20": [
+      { name: "Inès Reg", blurb: "humoriste (1992)" },
+      { name: "Énora Malagré", blurb: "animatrice et chroniqueuse (1980)" },
+      { name: "Francis Blanche", blurb: "acteur et humoriste (1921)" },
+      { name: "Olivier de Kersauson", blurb: "navigateur (1944)" },
+      { name: "Carlos Santana", blurb: "guitariste (1947)" }
+    ],
+    "07-21": [
+      { name: "Robin Williams", blurb: "acteur et humoriste (1951)" },
+      { name: "Charlotte Gainsbourg", blurb: "actrice et chanteuse (1971)" }
+    ],
+    "07-22": [
+      { name: "Selena Gomez", blurb: "chanteuse et actrice (1992)" },
+      { name: "Mireille Mathieu", blurb: "chanteuse (1946)" }
+    ],
+    "07-23": [
+      { name: "Daniel Radcliffe", blurb: "acteur (1989)" },
+      { name: "Slash", blurb: "guitariste (Guns N' Roses) (1965)" }
+    ],
+    "07-24": [
+      { name: "Éric Tabarly", blurb: "navigateur (1931)" },
+      { name: "Alexandre Dumas", blurb: "écrivain (1802)" }
+    ],
+    "07-25": [
+      { name: "Diam's", blurb: "rappeuse (1980)" },
+      { name: "Eric Judor", blurb: "acteur et humoriste (1969)" }
+    ],
+    "07-26": [
+      { name: "Guillaume Pley", blurb: "animateur de radio (1981)" },
+      { name: "Stanley Kubrick", blurb: "réalisateur (1928)" }
+    ],
+    "07-27": [
+      { name: "Bourvil", blurb: "acteur et chanteur (1917)" },
+      { name: "Taïg Khris", blurb: "champion de roller (1975)" }
+    ],
+    "07-28": [
+      { name: "Anne-Élisabeth Blateau", blurb: "actrice (Scènes de ménages) (1976)" },
+      { name: "Alexis Le Rossignol", blurb: "humoriste (1984)" }
+    ],
+    "07-29": [
+      { name: "Anne-Élisabeth Lemoine", blurb: "animatrice de télévision (1976)" },
+      { name: "Albin Michel", blurb: "éditeur (1873)" }
+    ],
+    "07-30": [
+      { name: "Laury Thilleman", blurb: "Miss France 2011 et animatrice (1991)" },
+      { name: "Simon Baker", blurb: "acteur (1969)" },
+      { name: "Lisa Kudrow", blurb: "actrice (1963)" },
+      { name: "Jean Reno", blurb: "acteur (1948)" },
+      { name: "Arnold Schwarzenegger", blurb: "acteur et homme politique (1947)" }
+    ],
+    "07-31": [
+      { name: "Grand Corps Malade", blurb: "slameur (1977)" },
+      { name: "J. K. Rowling", blurb: "romancière (Harry Potter) (1965)" },
+      { name: "Louis de Funès", blurb: "acteur (1914)" }
+    ],
+    "08-01": [
+      { name: "Orelsan", blurb: "rappeur (1982)" },
+      { name: "Mouloud Achour", blurb: "animateur et journaliste (1979)" },
+      { name: "Mac Lesggy", blurb: "animateur de vulgarisation scientifique (1961)" }
+    ],
+    "08-02": [
+      { name: "Pomme", blurb: "chanteuse (1996)" },
+      { name: "Messmer", blurb: "hypnotiseur (1971)" },
+      { name: "Muriel Robin", blurb: "humoriste et comédienne (1955)" },
+      { name: "Wes Craven", blurb: "réalisateur (1939)" }
+    ],
+    "08-03": [
+      { name: "Christophe Willem", blurb: "chanteur (1983)" },
+      { name: "Lambert Wilson", blurb: "acteur (1958)" }
+    ],
+    "08-04": [
+      { name: "Barack Obama", blurb: "président des États-Unis (1961)" },
+      { name: "Bruno Coquatrix", blurb: "directeur de l'Olympia (1910)" }
+    ],
+    "08-05": [
+      { name: "Jarry", blurb: "humoriste (1979)" },
+      { name: "Marine Le Pen", blurb: "femme politique (1968)" },
+      { name: "Jean-Marc Morandini", blurb: "animateur de télévision (1965)" },
+      { name: "Abbé Pierre", blurb: "prêtre et fondateur d'Emmaüs (1912)" }
+    ],
+    "08-06": [
+      { name: "Marc Lavoine", blurb: "chanteur et acteur (1962)" },
+      { name: "Andy Warhol", blurb: "artiste du pop art (1928)" }
+    ],
+    "08-07": [
+      { name: "Joyca", blurb: "vidéaste (1995)" },
+      { name: "David Duchovny", blurb: "acteur (1960)" }
+    ],
+    "08-08": [
+      { name: "Roger Federer", blurb: "joueur de tennis (1981)" },
+      { name: "Francis Lalanne", blurb: "chanteur (1958)" },
+      { name: "Gilles Verdez", blurb: "chroniqueur (1964)" }
+    ],
+    "08-09": [
+      { name: "Audrey Tautou", blurb: "actrice (1976)" },
+      { name: "Whitney Houston", blurb: "chanteuse (1963)" }
+    ],
+    "08-10": [
+      { name: "Kylie Jenner", blurb: "femme d'affaires et personnalité de télé-réalité (1997)" },
+      { name: "Jean Graton", blurb: "dessinateur (Michel Vaillant) (1923)" }
+    ],
+    "08-11": [
+      { name: "Steve Wozniak", blurb: "cofondateur d'Apple (1950)" },
+      { name: "Hulk Hogan", blurb: "catcheur (1953)" }
+    ],
+    "08-12": [
+      { name: "François Hollande", blurb: "ancien président de la République (1954)" },
+      { name: "Julien Lepers", blurb: "animateur de télévision (1951)" },
+      { name: "Erwin Schrödinger", blurb: "physicien (1887)" }
+    ],
+    "08-13": [
+      { name: "Booder", blurb: "humoriste (1978)" },
+      { name: "Manuel Valls", blurb: "homme politique (1962)" },
+      { name: "Alfred Hitchcock", blurb: "réalisateur (1899)" },
+      { name: "Fidel Castro", blurb: "dirigeant cubain (1926)" }
+    ],
+    "08-14": [
+      { name: "Mister V", blurb: "vidéaste et rappeur (1993)" },
+      { name: "Emmanuelle Béart", blurb: "actrice (1963)" },
+      { name: "David Hallyday", blurb: "chanteur (1966)" }
+    ],
+    "08-15": [
+      { name: "Jennifer Lawrence", blurb: "actrice (1990)" },
+      { name: "Sylvie Vartan", blurb: "chanteuse (1944)" },
+      { name: "Alain Juppé", blurb: "homme politique (1945)" }
+    ],
+    "08-16": [
+      { name: "Clovis Cornillac", blurb: "acteur (1967)" },
+      { name: "Steve Carell", blurb: "acteur (1962)" },
+      { name: "Madonna", blurb: "chanteuse (1958)" },
+      { name: "Patrick Balkany", blurb: "homme politique (1948)" },
+      { name: "Pierre Richard", blurb: "acteur (1934)" }
     ]
   };
 
@@ -531,7 +1533,7 @@ const AlbertAgeApp = () => {
     const parts = s.items.map((it) => {
       if (s.type === 'age') return `${it.name} ${it.fact}`;
       if (s.type === 'year') return it.text;
-      return `${it.name} (${it.blurb})`;
+      return it.blurb ? `${it.name} (${it.blurb})` : it.name;
     });
     return `Fabien Olicard m'a appris que — ${souvenirKicker(s).replace('…', '')} : ${parts.join(' · ')}`;
   };
@@ -588,7 +1590,7 @@ const AlbertAgeApp = () => {
     const items = s.items.map((it) => {
       if (s.type === 'age') return { tag: '', title: it.name, body: cap(it.fact), note: it.year || '' };
       if (s.type === 'year') return { tag: it.scope, title: '', body: it.text, note: '' };
-      return { tag: '', title: it.name, body: cap(it.blurb), note: '' };
+      return { tag: '', title: it.name, body: it.blurb ? cap(it.blurb) : '', note: '' };
     });
 
     const lineSets = items.map((it) => {
@@ -938,7 +1940,95 @@ const AlbertAgeApp = () => {
       background:rgba(12,7,18,.92); border:1px solid rgba(143,230,245,.35); color:var(--cyan-2);
       padding:12px 20px; border-radius:999px; font-size:14px; font-weight:600; backdrop-filter:blur(6px);
       box-shadow:0 10px 30px rgba(0,0,0,.5); animation:fade .2s ease; }
+
+    /* ===== Back-office privé (/admin-fabien) ===== */
+    .adm-card{ width:100%; max-width:384px; margin:0 auto; padding:32px 28px 26px; text-align:center;
+      border:1px solid rgba(143,230,245,.18); border-radius:22px;
+      background:linear-gradient(180deg, rgba(143,230,245,.055), rgba(255,255,255,.02));
+      backdrop-filter:blur(12px); box-shadow:0 24px 70px rgba(0,0,0,.5); }
+    .adm-badge{ display:inline-block; font-family:'Sora',sans-serif; font-size:11px; font-weight:600;
+      letter-spacing:.14em; text-transform:uppercase; color:var(--cyan-2);
+      border:1px solid rgba(143,230,245,.3); border-radius:999px; padding:5px 13px; background:rgba(143,230,245,.06); }
+    .adm-title{ font-family:'Bricolage Grotesque','Sora',sans-serif; font-weight:700; font-size:30px;
+      color:var(--ink); margin:16px 0 2px; letter-spacing:-.01em; }
+    .adm-sub{ color:var(--muted); font-size:14px; margin:0 0 22px; }
+    .adm-field{ margin-bottom:14px; text-align:left; }
+    .adm-btn{ width:100%; margin-top:10px; justify-content:center; }
+    .adm-back{ display:inline-block; margin-top:18px; color:var(--muted); font-size:13px;
+      text-decoration:none; border-bottom:1px solid transparent; transition:color .2s, border-color .2s; }
+    .adm-back:hover{ color:var(--cyan-2); border-color:rgba(143,230,245,.4); }
+    .adm-shell{ width:100%; max-width:680px; margin:0 auto; }
+    .adm-topbar{ display:flex; align-items:flex-start; justify-content:space-between; gap:16px;
+      padding-bottom:20px; margin-bottom:24px; border-bottom:1px solid rgba(143,230,245,.14); }
+    .adm-logout{ flex:none; cursor:pointer; font-family:'Sora',sans-serif; font-size:13px; font-weight:600;
+      color:var(--cyan-2); border:1px solid rgba(143,230,245,.3); border-radius:999px;
+      padding:9px 16px; background:rgba(143,230,245,.06); transition:all .2s; }
+    .adm-logout:hover{ background:rgba(143,230,245,.14); box-shadow:0 0 16px rgba(143,230,245,.2); }
+    .adm-placeholder{ padding:36px 26px; border:1px dashed rgba(143,230,245,.25); border-radius:18px;
+      background:rgba(143,230,245,.03); text-align:center; }
+    .adm-ph-title{ font-family:'Sora',sans-serif; font-weight:600; font-size:18px; color:var(--ink); margin:0 0 10px; }
+    .adm-ph-text{ color:var(--muted); font-size:15px; line-height:1.55; margin:0 auto; max-width:440px; }
+    .adm-meta{ margin-top:24px; font-size:12px; color:rgba(236,245,248,.4); letter-spacing:.02em; }
   `;
+
+  // ===== Rendu BACK-OFFICE (route privée /admin-fabien) =====
+  if (isAdminRoute) {
+    return (
+      <div className="albert-root">
+        <style>{css}</style>
+        <canvas ref={canvasRef} className="albert-canvas" />
+        <div className="albert-vignette" />
+        <div className="albert-wrap">
+          {!adminAuth ? (
+            <div className="adm-card">
+              <div className="adm-badge">Espace privé</div>
+              <h1 className="adm-title">Back-office</h1>
+              <p className="adm-sub">Accès réservé à Fabien</p>
+              <div className="adm-field">
+                <label className="a-label" htmlFor="adm-email">Email</label>
+                <input
+                  id="adm-email" className="a-input" type="email" autoComplete="username"
+                  value={adminEmail} onChange={(e) => setAdminEmail(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && submitAdminLogin()}
+                  placeholder="vous@exemple.com"
+                />
+              </div>
+              <div className="adm-field">
+                <label className="a-label" htmlFor="adm-pass">Mot de passe</label>
+                <input
+                  id="adm-pass" className="a-input" type="password" autoComplete="current-password"
+                  value={adminPass} onChange={(e) => setAdminPass(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && submitAdminLogin()}
+                  placeholder="••••••••"
+                />
+              </div>
+              {adminErr && <div className="a-state err" style={{ marginTop: 6 }}>{adminErr}</div>}
+              <button className="a-btn adm-btn" onClick={submitAdminLogin}>Se connecter</button>
+              <a className="adm-back" href="/">← Retour au spectacle</a>
+            </div>
+          ) : (
+            <div className="adm-shell">
+              <div className="adm-topbar">
+                <div>
+                  <div className="adm-badge">Connecté</div>
+                  <h1 className="adm-title" style={{ margin: '10px 0 0' }}>Back-office Fabien</h1>
+                </div>
+                <button className="adm-logout" onClick={adminLogout}>Déconnexion</button>
+              </div>
+              <div className="adm-placeholder">
+                <p className="adm-ph-title">Prêt pour tes options 🎛️</p>
+                <p className="adm-ph-text">
+                  L'accès privé fonctionne. Donne-moi les fonctionnalités que tu veux ici
+                  et je les ajoute dans cet espace.
+                </p>
+                <div className="adm-meta">Base actuelle : 526 entrées « par date » · 205 entrées « par âge »</div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="albert-root">
@@ -1079,7 +2169,7 @@ const AlbertAgeApp = () => {
                   {results.type === 'birthday' && (
                     <>
                       <h3 className="a-card-name"><span className="a-dot" />{it.name}</h3>
-                      <p className="a-card-fact"><span className="hl">{it.name}</span>, {it.blurb}</p>
+                      <p className="a-card-fact"><span className="hl">{it.name}</span>{it.blurb ? <>, {it.blurb}</> : null}</p>
                     </>
                   )}
                 </div>
@@ -1130,7 +2220,7 @@ const AlbertAgeApp = () => {
                   ) : (
                     <>
                       <h3 className="s-name">{it.name}</h3>
-                      <p className="s-fact">{souvenir.type === 'age' ? cap(it.fact) : cap(it.blurb)}</p>
+                      {(souvenir.type === 'age' ? it.fact : it.blurb) && <p className="s-fact">{cap(souvenir.type === 'age' ? it.fact : it.blurb)}</p>}
                       {souvenir.type === 'age' && it.year && <span className="s-year">{it.year}</span>}
                     </>
                   )}
