@@ -2972,16 +2972,20 @@ const AlbertAgeApp = () => {
     .adm-ph-text{ color:var(--muted); font-size:15px; line-height:1.55; margin:0 auto; max-width:440px; }
     .adm-meta{ margin-top:24px; font-size:12px; color:rgba(236,245,248,.4); letter-spacing:.02em; }
 
-    /* ===== Refonte "affiche Albert" : titre outline + points constellation ===== */
+    /* ===== Refonte "affiche Albert" : titre bold plein + points constellation ===== */
     .albert-root .a-hero h1{
       font-family:'Bricolage Grotesque','Sora',sans-serif;
-      font-weight:800; letter-spacing:.045em;
-      color:transparent; -webkit-text-stroke:2px #CBEFF8;
-      text-shadow:0 0 34px rgba(143,230,245,.4);
+      font-weight:800; letter-spacing:.03em;
       font-size:clamp(40px,10.4vw,84px);
+      color:#DFF4F9;
+      background:linear-gradient(180deg,#FFFFFF 0%,#DFF6FB 42%,#9FE9F6 100%);
+      -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+      filter:drop-shadow(0 0 22px rgba(143,230,245,.45));
+      text-shadow:none;
     }
-    @supports not (-webkit-text-stroke: 2px #fff){
-      .albert-root .a-hero h1{ color:#E8F5F9; }
+    @supports not (-webkit-background-clip: text){
+      .albert-root .a-hero h1{ -webkit-text-fill-color:currentColor; background:none;
+        text-shadow:0 0 28px rgba(143,230,245,.45); }
     }
 
     /* Saisie de la date de naissance */
@@ -3038,6 +3042,7 @@ const AlbertAgeApp = () => {
     .a-foot-title{ font-family:'Bricolage Grotesque','Sora',sans-serif; font-weight:700;
       font-size:clamp(18px,4.6vw,22px); color:#F4FBFD; margin:0 0 14px; }
     .a-foot-btn{ display:inline-flex; align-items:center; justify-content:center; gap:9px; cursor:pointer;
+      box-sizing:border-box;
       border:none; border-radius:13px; padding:13px 24px; color:#06212A; font-family:'Sora',sans-serif;
       font-weight:700; font-size:14px; background:linear-gradient(135deg,#C3F2FB,#8FE6F5 55%,#5FD2EC);
       box-shadow:0 8px 24px rgba(143,230,245,.3); transition:transform .15s, box-shadow .2s; }
@@ -3114,9 +3119,14 @@ const AlbertAgeApp = () => {
     /* Générateurs */
     .gen-display{ text-align:center; padding:30px 10px 26px; }
     .gen-big{ font-family:'Bricolage Grotesque','Sora',sans-serif; font-weight:800;
-      font-size:clamp(38px,9vw,58px); color:transparent; -webkit-text-stroke:1.8px #CBEFF8;
-      text-shadow:0 0 30px rgba(143,230,245,.35); letter-spacing:.04em; line-height:1.15; }
-    @supports not (-webkit-text-stroke: 2px #fff){ .gen-big{ color:#E8F5F9; } }
+      font-size:clamp(38px,9vw,58px); letter-spacing:.03em; line-height:1.15;
+      color:#DFF4F9;
+      background:linear-gradient(180deg,#FFFFFF 0%,#DFF6FB 42%,#9FE9F6 100%);
+      -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+      filter:drop-shadow(0 0 18px rgba(143,230,245,.4)); }
+    @supports not (-webkit-background-clip: text){
+      .gen-big{ -webkit-text-fill-color:currentColor; background:none;
+        text-shadow:0 0 26px rgba(143,230,245,.4); } }
     .gen-sub{ margin-top:10px; color:rgba(236,245,248,.55); font-size:14px; }
     .gen-answer{ margin-top:20px; text-align:left; }
     .gen-block{ margin-top:16px; }
@@ -3503,7 +3513,7 @@ const AlbertAgeApp = () => {
         </div>
 
         <p className="a-tagline">
-          Un voyage au cœur de la curiosité, de la science et du mentalisme
+          Inutile de tout apprendre par cœur, vous avez toutes les informations qui vous concernent dans votre main
         </p>
 
         {!birth && (
@@ -3626,12 +3636,12 @@ const AlbertAgeApp = () => {
         <div className="a-footer">
           <div className="a-foot-card">
             <p className="a-foot-kicker">Albert · Le spectacle</p>
-            <p className="a-foot-title">Fabien est en tournée dans toute la France</p>
+            <p className="a-foot-title">Fabien est en tournée dans toute la France, la Suisse et la Belgique</p>
             <button className="a-foot-btn" onClick={() => setShowTour(true)}><Ticket size={16} /> Voir les dates et les villes</button>
           </div>
           <div className="a-foot-card">
             <p className="a-foot-kicker">L'application</p>
-            <p className="a-foot-title">Gardez Expérimente dans votre poche</p>
+            <p className="a-foot-title">Gardez l'application dans votre poche</p>
             <button className="a-foot-btn ghost" onClick={() => setShowInstall(true)}><Smartphone size={16} /> Installer sur mon téléphone</button>
           </div>
         </div>
