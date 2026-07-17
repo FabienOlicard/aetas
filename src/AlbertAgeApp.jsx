@@ -143,6 +143,10 @@ const parseAdditions = (raw) => {
   return { ok, errors };
 };
 
+// Quelles vues sont possibles selon ce qui a été saisi
+// (année seule : âge + année ; jour et mois seuls : né comme + et plus encore)
+const viewAvail = (v, b) => !!b && ((v === 'age' || v === 'year') ? b.y != null : b.d != null && b.m != null);
+
 const AlbertAgeApp = () => {
   // ── Parcours public ──
   const [bd, setBd] = useState({ d: '', m: '', y: '' });        // saisie en cours
@@ -2326,12 +2330,34 @@ const AlbertAgeApp = () => {
     if (field === 'm' && digits.length === 2 && yearRef.current) yearRef.current.focus();
   };
   const validateBirth = () => {
-    const d = parseInt(bd.d, 10), m = parseInt(bd.m, 10), y = parseInt(bd.y, 10);
     const t = todayParts();
-    if (!bd.d || !bd.m || !bd.y || bd.y.length < 4) { setDateErr('Complétez le jour, le mois et l\'année (4 chiffres).'); return; }
-    if (isNaN(y) || y < 1900 || y > t.y) { setDateErr(`Entrez une année entre 1900 et ${t.y}.`); return; }
-    if (!isValidDate(d, m, y)) { setDateErr('Cette date n\'existe pas dans le calendrier. Vérifiez le jour et le mois.'); return; }
-    if (Date.UTC(y, m - 1, d) > Date.UTC(t.y, t.m - 1, t.d)) { setDateErr('Cette date est dans le futur... pour l\'instant.'); return; }
+    const hasD = bd.d !== '', hasM = bd.m !== '', hasY = bd.y !== '';
+    if (!hasD && !hasM && !hasY) {
+      setDateErr('Entrez votre date complète, ou seulement l\'année, ou seulement le jour et le mois.');
+      return;
+    }
+    if (hasD !== hasM) {
+      setDateErr('Le jour et le mois vont ensemble : complétez les deux, ou laissez les deux vides.');
+      return;
+    }
+    const d = hasD ? parseInt(bd.d, 10) : null;
+    const m = hasM ? parseInt(bd.m, 10) : null;
+    const y = hasY ? parseInt(bd.y, 10) : null;
+    if (hasY && (bd.y.length < 4 || isNaN(y) || y < 1900 || y > t.y)) {
+      setDateErr(`Entrez une année à 4 chiffres, entre 1900 et ${t.y}.`);
+      return;
+    }
+    if (hasD) {
+      const refYear = y != null ? y : 2024; // année bissextile : accepte le 29/02 sans année
+      if (!(m >= 1 && m <= 12) || !(d >= 1 && d <= daysInMonth(m, refYear))) {
+        setDateErr('Cette date n\'existe pas dans le calendrier. Vérifiez le jour et le mois.');
+        return;
+      }
+    }
+    if (hasD && hasY && Date.UTC(y, m - 1, d) > Date.UTC(t.y, t.m - 1, t.d)) {
+      setDateErr('Cette date est dans le futur... pour l\'instant.');
+      return;
+    }
     setBirth({ d, m, y });
     setView(null); setResults(null); setRevealing(false); setSouvenir(null); setDateErr('');
     playThinking();
@@ -2344,9 +2370,11 @@ const AlbertAgeApp = () => {
 
   // ─── Calcul du contenu de chaque vue ───
   const computeView = (v, b) => {
+    const full = b.d != null && b.m != null && b.y != null;
     if (v === 'age') {
-      const n = computeAge(b.d, b.m, b.y);
-      return { type: 'age', items: database[n] || [], q: { age: n } };
+      const t = todayParts();
+      const n = full ? computeAge(b.d, b.m, b.y) : t.y - b.y;
+      return { type: 'age', items: database[n] || [], q: { age: n, exact: full } };
     }
     if (v === 'year') {
       return { type: 'year', items: yearEvents[b.y] || [], q: { year: b.y } };
@@ -2363,10 +2391,10 @@ const AlbertAgeApp = () => {
     const nbSub = nb.isToday ? '' : `Dans ${fmtInt(nb.inDays)} jour${nb.inDays > 1 ? 's' : ''}${nb.note ? `, ${nb.note}` : ''}`;
     const items = [
       { label: 'Votre signe astrologique', value: `${z.sym} ${z.name}`, sub: '' },
-      { label: 'Vous êtes né(e) un', value: cap(weekdayFR(b.d, b.m, b.y)), sub: `Le ${b.d === 1 ? '1er' : b.d} ${MONTHS[b.m - 1]} ${b.y} était un ${weekdayFR(b.d, b.m, b.y)}.` },
-      { label: 'Votre prochain anniversaire', value: nbVal, sub: nbSub },
-      { label: 'Jours vécus à ce jour', value: `${fmtInt(daysSince(b.d, b.m, b.y))} jours`, sub: 'Et chacun compte.' },
     ];
+    if (full) items.push({ label: 'Vous êtes né(e) un', value: cap(weekdayFR(b.d, b.m, b.y)), sub: `Le ${b.d === 1 ? '1er' : b.d} ${MONTHS[b.m - 1]} ${b.y} était un ${weekdayFR(b.d, b.m, b.y)}.` });
+    items.push({ label: 'Votre prochain anniversaire', value: nbVal, sub: nbSub });
+    if (full) items.push({ label: 'Jours vécus à ce jour', value: `${fmtInt(daysSince(b.d, b.m, b.y))} jours`, sub: 'Et chacun compte.' });
     return { type: 'more', items, q: {} };
   };
 
@@ -2401,7 +2429,7 @@ const AlbertAgeApp = () => {
 
   // ─── Ouverture d'une vue avec petite mise en scène (tap pour passer) ───
   const selectView = (v) => {
-    if (!birth) return;
+    if (!viewAvail(v, birth)) return;
     if (revealTimer.current) clearTimeout(revealTimer.current);
     setView(v);
     pendingRef.current = computeView(v, birth);
@@ -2995,6 +3023,10 @@ const AlbertAgeApp = () => {
     .a-bd-y{ flex:1.6; min-width:0; }
     .a-bd-sep{ align-self:center; color:rgba(236,245,248,.3); font-weight:700; }
     .a-validate{ width:100%; margin-top:14px; justify-content:center; }
+    .a-sublabel{ margin:6px 0 12px; font-size:12.5px; color:rgba(236,245,248,.5); line-height:1.5; }
+    .a-view-btn:disabled{ opacity:.32; cursor:default; }
+    .a-view-btn:disabled:hover{ transform:none; border-color:rgba(143,230,245,.22); }
+    .a-lockhint{ margin:12px 0 0; text-align:center; font-size:12.5px; color:rgba(236,245,248,.45); }
 
     /* Bandeau date validée */
     .a-birthbar{ display:flex; align-items:center; justify-content:center; gap:14px; flex-wrap:wrap;
@@ -3520,6 +3552,7 @@ const AlbertAgeApp = () => {
           <>
             <div className="a-panel">
               <label className="a-label" htmlFor="bd-day">Votre date de naissance</label>
+              <p className="a-sublabel">Complète pour tout découvrir. Ou seulement l'année, ou seulement le jour et le mois.</p>
               <div className="a-bd-row">
                 <input id="bd-day" ref={dayRef} className="a-input a-bd-d" type="text" inputMode="numeric" autoComplete="bday-day"
                   value={bd.d} onChange={(e) => handleBd('d', e.target.value)} onKeyDown={handleKeyDown} placeholder="JJ" aria-label="Jour" />
@@ -3544,18 +3577,26 @@ const AlbertAgeApp = () => {
         {birth && (
           <>
             <div className="a-birthbar">
-              <span className="val">Né(e) le {birth.d === 1 ? '1er' : birth.d} {MONTHS[birth.m - 1]} {birth.y}</span>
+              <span className="val">
+                {birth.d != null && birth.y != null && `Né(e) le ${birth.d === 1 ? '1er' : birth.d} ${MONTHS[birth.m - 1]} ${birth.y}`}
+                {birth.d != null && birth.y == null && `Né(e) un ${birth.d === 1 ? '1er' : birth.d} ${MONTHS[birth.m - 1]}`}
+                {birth.d == null && `Né(e) en ${birth.y}`}
+              </span>
               <button onClick={changeDate}>✦ Changer de date</button>
             </div>
 
             <div className="a-views">
               {VIEW_BTNS.map((v) => (
-                <button key={v.id} className={`a-view-btn ${view === v.id ? 'active' : ''}`} onClick={() => selectView(v.id)}>
+                <button key={v.id} className={`a-view-btn ${view === v.id ? 'active' : ''}`}
+                  disabled={!viewAvail(v.id, birth)} onClick={() => selectView(v.id)}>
                   <v.Icon size={22} strokeWidth={2} />
                   {v.label}
                 </button>
               ))}
             </div>
+            {!(birth.d != null && birth.m != null && birth.y != null) && (
+              <p className="a-lockhint">✦ Entrez votre date complète pour tout débloquer.</p>
+            )}
 
             {/* Mise en scène : reveal court (tap pour passer) */}
             {revealing && (
@@ -3573,7 +3614,9 @@ const AlbertAgeApp = () => {
             {results && results.items.length > 0 && (
               <>
                 <p className="a-rhead">
-                  {results.type === 'age' && `Vous avez ${results.q.age} ans. À votre âge…`}
+                  {results.type === 'age' && (results.q.exact
+                    ? `Vous avez ${results.q.age} ans. À votre âge…`
+                    : `C'est l'année de vos ${results.q.age} ans. À votre âge…`)}
                   {results.type === 'year' && `En ${results.q.year}, l'année de votre naissance…`}
                   {results.type === 'day' && `Vous êtes né(e) un ${results.q.day === 1 ? '1er' : results.q.day} ${results.q.monthName}, comme…`}
                   {results.type === 'more' && `Votre date de naissance révèle…`}
